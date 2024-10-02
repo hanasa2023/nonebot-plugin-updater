@@ -1,0 +1,27 @@
+name: TypeCheck CI
+
+on:
+  push:
+
+jobs:
+  Mypy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install poetry
+        run: pipx install poetry
+        shell: bash
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+          cache: "poetry"
+
+      - run: poetry install
+        shell: bash
+
+      - name: Run Mypy
+        shell: bash
+        run: |
+          poetry run mypy ./nonebot_plugin_updater

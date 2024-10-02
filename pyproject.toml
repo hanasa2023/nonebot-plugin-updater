@@ -8,9 +8,10 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.9, < 4.0"
-nonebot2 = { extras = ["fastapi"], version = "^2.3.3" }
-httpx = "^0.27.2"
-nonebot-plugin-alconna = "^0.52.3"
+nonebot2 = ">=2.3.3"
+httpx = ">=0.27.2"
+nonebot-plugin-alconna = ">=0.52.3"
+toml = "^0.10.2"
 
 
 [[tool.poetry.source]]
@@ -22,9 +23,13 @@ priority = "primary"
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.11.2"
 nonebot-adapter-onebot = "^2.4.5"
+fastapi = "^0.115.0"
+nonebot2 = { extras = ["fastapi"], version = "^2.3.3" }
+nonebot-plugin-status = "0.8.0"
+types-toml = "^0.10.8.20240310"
 
 [tool.ruff]
-ignore = ["E402"]
+ignore = ["E402", "F401"]
 
 [tool.ruff.format]
 quote-style = "single"
@@ -38,5 +43,5 @@ adapters = [
     { name = "OneBot V11", module_name = "nonebot.adapters.onebot.v11" },
 ]
 plugins = []
-plugin_dirs = ["nonebot_plugin_updater"]
+plugin_dirs = [""]
 builtin_plugins = []

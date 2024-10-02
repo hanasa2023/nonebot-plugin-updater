@@ -10,3 +10,9 @@ class Info(BaseModel):
 
 class PypiResponse(BaseModel):
     info: Info
+
+
+class PluginInfo(BaseModel):
+    name: str
+    current_version: str
+    latest_version: str
