@@ -1,10 +1,13 @@
-from os import close
 from pathlib import Path
-from typing import Any, NoReturn
+from typing import Any
 
 from arclet.alconna import Arparma
 from nonebot import require
+from tabulate import tabulate
 
+from nonebot_plugin_updater.utils.addition_for_htmlrender import template_element_to_pic
+
+from .config import plugin_config
 from .utils.common import (
     find_project_root,
     get_plugin_module_list,
@@ -21,6 +24,7 @@ from nonebot_plugin_alconna import (
     Args,
     Match,
     Option,
+    UniMessage,
     on_alconna,
 )
 
@@ -47,18 +51,45 @@ async def _() -> None:
     plugin_list: list[str] = []
     for moudle in plugin_module_list:
         plugin_list.append(moudle.replace('_', '-'))
-    msg: str = '通过pypi安装的插件有：\n'
-    for plugin in plugin_list:
-        msg = msg + f'{plugin}\n'
+    if plugin_config.info_send_mode == 'text':
+        headers: list[str] = ['通过pypi安装的插件']
+        table: list[list[str]] = [[plugin for plugin in plugin_list]]
+        msg = tabulate(table, headers, showindex=True)
+    else:
+        template_path = Path(__file__).parent / 'templates'
+        img: bytes = await template_element_to_pic(
+            str(template_path),
+            template_name='plugin_info.jinja2',
+            templates={'plugins': [plugin for plugin in plugin_list]},
+            element='#container',
+            wait=2,
+            omit_background=True,
+        )
+        msg = UniMessage().image(raw=img)
     await g_plugin_list.finish(msg)
 
 
 @check_update.handle()
 async def _() -> None:
     plugin_update_list: list[PluginInfo] = await get_plugin_update_list()
-    msg: str = '插件名 现版本 最新版本\n'
-    for plugin in plugin_update_list:
-        msg = msg + f'{plugin.name} {plugin.current_version} {plugin.latest_version}'
+    if plugin_config.info_send_mode == 'text':
+        headers: list[str] = ['plugin name', 'version']
+        table: list[list[str]] = [
+            [plugin.name, f'{plugin.current_version + '-->' + plugin.latest_version}']
+            for plugin in plugin_update_list
+        ]
+        msg = tabulate(table, headers)
+    else:
+        template_path = Path(__file__).parent / 'templates'
+        img: bytes = await template_element_to_pic(
+            str(template_path),
+            template_name='check_plugin_update.jinja2',
+            templates={'plugins': plugin_update_list},
+            element='#container',
+            wait=2,
+            omit_background=True,
+        )
+        msg = UniMessage().image(raw=img)
     await check_update.finish(msg)
 
 

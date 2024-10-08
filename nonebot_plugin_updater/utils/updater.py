@@ -38,7 +38,7 @@ class Updater:
         raise Exception('无法重启')
 
     @staticmethod
-    def _uvicorn_getserver() -> Server:
+    def _uvicorn_getserver() -> 'Server':
         from uvicorn.server import Server
 
         fis = inspect.getouterframes(inspect.currentframe())
