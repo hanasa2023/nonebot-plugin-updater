@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pathlib import Path
 from typing import Any
 
@@ -22,8 +24,10 @@ from nonebot_plugin_alconna import (
     AlconnaMatch,
     AlconnaMatcher,
     Args,
+    Image,
     Match,
     Option,
+    Text,
     UniMessage,
     on_alconna,
 )
@@ -54,10 +58,12 @@ async def _() -> None:
     if plugin_config.info_send_mode == 'text':
         headers: list[str] = ['通过pypi安装的插件']
         table: list[list[str]] = [[plugin for plugin in plugin_list]]
-        msg = tabulate(table, headers, showindex=True)
+        msg: UniMessage[Text] | UniMessage[Image] = UniMessage().text(
+            tabulate(table, headers, showindex=True)
+        )
     else:
         template_path = Path(__file__).parent / 'templates'
-        img: bytes = await template_element_to_pic(
+        img = await template_element_to_pic(
             str(template_path),
             template_name='plugin_info.jinja2',
             templates={'plugins': [plugin for plugin in plugin_list]},
@@ -75,13 +81,15 @@ async def _() -> None:
     if plugin_config.info_send_mode == 'text':
         headers: list[str] = ['plugin name', 'version']
         table: list[list[str]] = [
-            [plugin.name, f'{plugin.current_version + '-->' + plugin.latest_version}']
+            [plugin.name, plugin.current_version + '-->' + plugin.latest_version]
             for plugin in plugin_update_list
         ]
-        msg = tabulate(table, headers)
+        msg: UniMessage[Text] | UniMessage[Image] = UniMessage().text(
+            tabulate(table, headers, showindex=True)
+        )
     else:
         template_path = Path(__file__).parent / 'templates'
-        img: bytes = await template_element_to_pic(
+        img = await template_element_to_pic(
             str(template_path),
             template_name='check_plugin_update.jinja2',
             templates={'plugins': plugin_update_list},

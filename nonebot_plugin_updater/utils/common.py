@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Any
 
 import httpx
 import importlib_metadata
@@ -28,9 +29,9 @@ def find_project_root() -> Path:
 
 
 def get_plugin_module_list(project_root: Path) -> list[str]:
-    pyproject_path = project_root / 'pyproject.toml'
-    config = toml.load(pyproject_path)
-    plugin_list = config['tool']['nonebot']['plugins']
+    pyproject_path: Path = project_root / 'pyproject.toml'
+    config: dict[str, Any] = toml.load(pyproject_path)
+    plugin_list: list[str] = config['tool']['nonebot']['plugins']
     return plugin_list
 
 
