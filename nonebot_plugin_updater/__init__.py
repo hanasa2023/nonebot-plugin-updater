@@ -1,10 +1,9 @@
-from nonebot import get_plugin_config
-from nonebot.plugin import PluginMetadata
+from nonebot.plugin import PluginMetadata, inherit_supported_adapters
 
 from .commands import check_update, g_plugin_list, update_plugin
 from .config import Config
 
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 __plugin_meta__ = PluginMetadata(
     name='nb插件更新器',
     description='一款全新的检测已安装插件更新情况的插件',
@@ -19,6 +18,7 @@ __plugin_meta__ = PluginMetadata(
 |    `关闭nb`    |  无  |  无   |                                  远程关闭 nb nb                                  |               `/关闭nb`                |
 |    `重启nb`    |  无  |  无   |                                  远程重启 nb nb                                  |               `/重启nb`                |""",
     config=Config,
+    supported_adapters=inherit_supported_adapters('nonebot_plugin_alconna'),
     extra={
         'version': __version__,
         'authors': [
@@ -26,5 +26,3 @@ __plugin_meta__ = PluginMetadata(
         ],
     },
 )
-
-config = get_plugin_config(Config)
