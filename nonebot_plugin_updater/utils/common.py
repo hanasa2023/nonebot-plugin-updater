@@ -16,7 +16,10 @@ async def get_plugin_latest_version(package_name: str) -> str:
         )
         if response.status_code == 200:
             data: PypiResponse = PypiResponse(**response.json())
-            return data.info.version
+            if data.info.version is not None:
+                return data.info.version
+            else:
+                return 'None'
         else:
             return 'None'
 

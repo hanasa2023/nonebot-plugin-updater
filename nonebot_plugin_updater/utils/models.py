@@ -1,11 +1,13 @@
-from pydantic import BaseModel
+from __future__ import annotations
+
+from pydantic import BaseModel, Field
 
 
 class Info(BaseModel):
-    author: str
-    author_email: str
-    summary: str
-    version: str
+    author: str | None = Field(None)
+    author_email: str | None = Field(None)
+    summary: str | None = Field(None)
+    version: str | None = Field(None)
 
 
 class PypiResponse(BaseModel):

@@ -71,14 +71,14 @@
 
 - 获取已安装插件列表 <br>
   ![plugin_list](./docs/plugin_list.png)
+  ![get_plugin_info](./docs/plugin_info_pic.png)
 
 - 检查插件更新<br>
   ![check_update](./docs/check_update.png)
-  ![check_update_pic](./docs/check_update_pic.png)
+  ![check_update](./docs/check_update_pic.png)
 
 - 更新插件<br>
   ![update_plugin](./docs/update_plugin.png)
-  ![check_update_pic](./docs/check_update_pic.png)
 
 - 远程关闭 nb<br>
   ![close_nb](./docs/close_nb.png)
