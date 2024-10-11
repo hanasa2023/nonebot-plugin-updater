@@ -6,7 +6,7 @@ from pathlib import Path
 from shutil import which
 from typing import TYPE_CHECKING
 
-from nonebot import get_driver
+from nonebot import get_driver, logger
 
 from nonebot_plugin_updater.utils.models import PluginInfo
 
@@ -105,7 +105,8 @@ class Updater:
                                 f'nb plugin update {plugin.name}', check=True
                             )
                 self._restart()
-            except Exception:
+            except Exception as e:
+                logger.exception(e)
                 await self.do_stop()
 
     async def do_restart(self) -> None:
