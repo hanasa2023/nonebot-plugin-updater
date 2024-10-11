@@ -3,7 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from arclet.alconna import Arparma
 from nonebot import require
 from tabulate import tabulate
 
@@ -11,11 +10,11 @@ from nonebot_plugin_updater.utils.addition_for_htmlrender import template_elemen
 
 from .config import plugin_config
 from .utils.common import (
-    find_project_root,
+    get_plugin_info_list,
     get_plugin_module_list,
     get_plugin_update_list,
 )
-from .utils.models import PluginInfo
+from .utils.models import NBResponse, PluginInfo
 from .utils.updater import Updater
 
 require('nonebot_plugin_alconna')
@@ -26,7 +25,6 @@ from nonebot_plugin_alconna import (
     Args,
     Image,
     Match,
-    Option,
     Text,
     UniMessage,
     on_alconna,
@@ -38,7 +36,7 @@ g_plugin_list: type[AlconnaMatcher] = on_alconna(_l, use_cmd_start=True)
 _u: Alconna[Any] = Alconna('检查插件更新')
 check_update: type[AlconnaMatcher] = on_alconna(_u, use_cmd_start=True)
 
-_udr: Alconna[Any] = Alconna('更新插件', Option('name', Args['plugin_name', str]))
+_udr: Alconna[Any] = Alconna('更新插件', Args['plugin_name', str])
 update_plugin: type[AlconnaMatcher] = on_alconna(_udr, use_cmd_start=True)
 
 _c: Alconna[Any] = Alconna('关闭nb')
@@ -50,8 +48,7 @@ restart_nb: type[AlconnaMatcher] = on_alconna(_r, use_cmd_start=True)
 
 @g_plugin_list.handle()
 async def _() -> None:
-    project_root: Path = find_project_root()
-    plugin_module_list: list[str] = get_plugin_module_list(project_root)
+    plugin_module_list: list[str] = get_plugin_module_list()
     plugin_list: list[str] = []
     for moudle in plugin_module_list:
         plugin_list.append(moudle.replace('_', '-'))
@@ -62,11 +59,12 @@ async def _() -> None:
             tabulate(table, headers, showindex=True)
         )
     else:
+        plugin_info_list: list[NBResponse] = await get_plugin_info_list(plugin_list)
         template_path = Path(__file__).parent / 'templates'
         img = await template_element_to_pic(
             str(template_path),
             template_name='plugin_info.jinja2',
-            templates={'plugins': [plugin for plugin in plugin_list]},
+            templates={'plugins': plugin_info_list},
             element='#container',
             wait=2,
             omit_background=True,
@@ -102,22 +100,18 @@ async def _() -> None:
 
 
 @update_plugin.handle()
-async def _(
-    result: Arparma, plugin_name: Match[str] = AlconnaMatch('plugin_name')
-) -> None:
-    plugin_update_list = await get_plugin_update_list()
-    await update_plugin.send('正在更新插件中……')
-    if result.find('name'):
-        if plugin_name.available and plugin_name.result in [
-            plugin.name for plugin in plugin_update_list
-        ]:
+async def _(plugin_name: Match[str] = AlconnaMatch('plugin_name')) -> None:
+    if plugin_name.available:
+        plugin_update_list = await get_plugin_update_list()
+        await update_plugin.send('正在更新插件中……')
+        if plugin_name.result == 'all':
+            updater = Updater(plugin_update_list)
+            await updater.do_update()
+        elif plugin_name.result in [plugin.name for plugin in plugin_update_list]:
             updater = Updater(plugin_update_list, plugin_name=plugin_name.result)
             await updater.do_update()
         else:
             await update_plugin.finish('无效的插件名')
-    else:
-        updater = Updater(plugin_update_list)
-        await updater.do_update()
 
 
 @close_nb.handle()

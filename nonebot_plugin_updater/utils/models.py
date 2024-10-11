@@ -3,15 +3,26 @@ from __future__ import annotations
 from pydantic import BaseModel, Field
 
 
-class Info(BaseModel):
-    author: str | None = Field(None)
-    author_email: str | None = Field(None)
-    summary: str | None = Field(None)
-    version: str | None = Field(None)
+class Tag(BaseModel):
+    label: str
+    color: str
 
 
-class PypiResponse(BaseModel):
-    info: Info
+class NBResponse(BaseModel):
+    module_name: str
+    project_link: str
+    name: str
+    desc: str
+    author: str
+    homepage: str
+    tags: list[Tag]
+    is_official: bool
+    type: str | None
+    supported_adapters: list[str] | None
+    valid: bool
+    version: str
+    time: str
+    skip_test: bool
 
 
 class PluginInfo(BaseModel):

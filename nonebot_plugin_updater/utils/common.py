@@ -6,22 +6,20 @@ import importlib_metadata
 import toml
 
 from ..config import plugin_config
-from .models import PluginInfo, PypiResponse
+from .models import NBResponse, PluginInfo
 
 
 async def get_plugin_latest_version(package_name: str) -> str:
     async with httpx.AsyncClient() as ctx:
         response: httpx.Response = await ctx.get(
-            f'{plugin_config.pypi_info_url}/{package_name}/json'
+            f'{plugin_config.github_proxy}/https://raw.githubusercontent.com/nonebot/registry/results/plugins.json'
         )
         if response.status_code == 200:
-            data: PypiResponse = PypiResponse(**response.json())
-            if data.info.version is not None:
-                return data.info.version
-            else:
-                return 'None'
-        else:
-            return 'None'
+            data: list[NBResponse] = [NBResponse(**item) for item in response.json()]
+            for d in data:
+                if d.project_link == package_name:
+                    return d.version
+        return 'None'
 
 
 def find_project_root() -> Path:
@@ -31,16 +29,30 @@ def find_project_root() -> Path:
     raise FileNotFoundError("Could not find 'pyproject.toml' in any parent directory")
 
 
-def get_plugin_module_list(project_root: Path) -> list[str]:
+def get_plugin_module_list() -> list[str]:
+    project_root = find_project_root()
     pyproject_path: Path = project_root / 'pyproject.toml'
     config: dict[str, Any] = toml.load(pyproject_path)
     plugin_list: list[str] = config['tool']['nonebot']['plugins']
     return plugin_list
 
 
+async def get_plugin_info_list(plugin_list: list[str]) -> list[NBResponse]:
+    plugin_info_list: list[NBResponse] = []
+    async with httpx.AsyncClient() as ctx:
+        response: httpx.Response = await ctx.get(
+            f'{plugin_config.github_proxy}/https://raw.githubusercontent.com/nonebot/registry/results/plugins.json'
+        )
+        if response.status_code == 200:
+            data: list[NBResponse] = [NBResponse(**item) for item in response.json()]
+            for d in data:
+                if d.project_link in plugin_list:
+                    plugin_info_list.append(d)
+    return plugin_info_list
+
+
 async def get_plugin_update_list() -> list[PluginInfo]:
-    project_root = find_project_root()
-    plugin_module_list = get_plugin_module_list(project_root)
+    plugin_module_list = get_plugin_module_list()
     plugin_update_list: list[PluginInfo] = []
     for module in plugin_module_list:
         plugin = module.replace('_', '-')

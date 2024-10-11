@@ -7,8 +7,8 @@ from pydantic import BaseModel
 class Config(BaseModel):
     """Plugin Config Here"""
 
-    # 获取插件信息的url
-    pypi_info_url: str = 'https://mirrors.ustc.edu.cn/pypi'
+    # GitHub代理
+    github_proxy: str = 'https://ghp.ci'
     # 发送信息的模式
     info_send_mode: Literal['text', 'pic'] = 'pic'
 
