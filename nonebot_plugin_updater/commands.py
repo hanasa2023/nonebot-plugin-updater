@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from nonebot import require
+from nonebot import plugin, require
 from tabulate import tabulate
 
 from nonebot_plugin_updater.utils.addition_for_htmlrender import template_element_to_pic
@@ -103,15 +103,19 @@ async def _() -> None:
 async def _(plugin_name: Match[str] = AlconnaMatch('plugin_name')) -> None:
     if plugin_name.available:
         plugin_update_list = await get_plugin_update_list()
-        await update_plugin.send('正在更新插件中……')
         if plugin_name.result == 'all':
-            updater = Updater(plugin_update_list)
-            await updater.do_update()
+            if not plugin_update_list:
+                await update_plugin.finish('所有插件已是最新')
+            else:
+                await update_plugin.send('正在更新插件中……')
+                updater = Updater(plugin_update_list)
+                await updater.do_update()
         elif plugin_name.result in [plugin.name for plugin in plugin_update_list]:
+            await update_plugin.send('正在更新插件中……')
             updater = Updater(plugin_update_list, plugin_name=plugin_name.result)
             await updater.do_update()
         else:
-            await update_plugin.finish('无效的插件名')
+            await update_plugin.finish('无效的插件名/插件已是最新')
 
 
 @close_nb.handle()
