@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import inspect
 import socket
+from os import execl
 from pathlib import Path
 from shutil import which
 from typing import TYPE_CHECKING
@@ -24,19 +25,19 @@ class Updater:
         self.plugin_name = plugin_name
 
     def _restart(self) -> None:
-        import subprocess
+        from os import execlp
 
         nb = which('nb')
         py = which('python')
         if nb:
-            subprocess.run('nb run', check=True)
+            execlp(nb, nb, 'run')
         elif py:
             from sys import argv
 
             if argv and Path(argv[0]).exists():
-                subprocess.run([py, argv[0]], check=True)
+                execlp(py, py, argv[0])
             if Path('bot.py').exists():
-                subprocess.run([py, 'bot.py'], check=True)
+                execlp(py, py, 'bot.py')
         raise Exception('无法重启')
 
     @staticmethod
@@ -97,12 +98,12 @@ class Updater:
                 if nb:
                     if self.plugin_name is not None:
                         subprocess.run(
-                            f'nb plugin update {self.plugin_name}', check=True
+                            [nb, 'plugin', 'update', self.plugin_name], check=True
                         )
                     else:
                         for plugin in self.plugin_update_list:
                             subprocess.run(
-                                f'nb plugin update {plugin.name}', check=True
+                                [nb, 'plugin', 'update', plugin.name], check=True
                             )
                 self._restart()
             except Exception as e:
