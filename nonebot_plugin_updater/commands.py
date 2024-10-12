@@ -3,7 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from nonebot import plugin, require
+from nonebot import require
+from nonebot.permission import SUPERUSER
 from tabulate import tabulate
 
 from .config import plugin_config
@@ -36,13 +37,19 @@ _u: Alconna[Any] = Alconna('检查插件更新')
 check_update: type[AlconnaMatcher] = on_alconna(_u, use_cmd_start=True)
 
 _udr: Alconna[Any] = Alconna('更新插件', Args['plugin_name', str])
-update_plugin: type[AlconnaMatcher] = on_alconna(_udr, use_cmd_start=True)
+update_plugin: type[AlconnaMatcher] = on_alconna(
+    _udr, use_cmd_start=True, permission=SUPERUSER
+)
 
 _c: Alconna[Any] = Alconna('关闭nb')
-close_nb: type[AlconnaMatcher] = on_alconna(_c, use_cmd_start=True)
+close_nb: type[AlconnaMatcher] = on_alconna(
+    _c, use_cmd_start=True, permission=SUPERUSER
+)
 
 _r: Alconna[Any] = Alconna('重启nb')
-restart_nb: type[AlconnaMatcher] = on_alconna(_r, use_cmd_start=True)
+restart_nb: type[AlconnaMatcher] = on_alconna(
+    _r, use_cmd_start=True, permission=SUPERUSER
+)
 
 
 @g_plugin_list.handle()
@@ -59,7 +66,7 @@ async def _() -> None:
         )
     else:
         plugin_info_list: list[NBResponse] = await get_plugin_info_list(plugin_list)
-        template_path = Path(__file__).parent / 'templates'
+        template_path: Path = Path(__file__).parent / 'templates'
         img: bytes = await template_element_to_pic(
             str(template_path),
             template_name='plugin_info.jinja2',
@@ -85,7 +92,7 @@ async def _() -> None:
             tabulate(table, headers, showindex=True)
         )
     else:
-        template_path = Path(__file__).parent / 'templates'
+        template_path: Path = Path(__file__).parent / 'templates'
         img = await template_element_to_pic(
             str(template_path),
             template_name='check_plugin_update.jinja2',
@@ -101,7 +108,7 @@ async def _() -> None:
 @update_plugin.handle()
 async def _(plugin_name: Match[str] = AlconnaMatch('plugin_name')) -> None:
     if plugin_name.available:
-        plugin_update_list = await get_plugin_update_list()
+        plugin_update_list: list[PluginInfo] = await get_plugin_update_list()
         if plugin_name.result == 'all':
             if not plugin_update_list:
                 await update_plugin.finish('所有插件已是最新')
