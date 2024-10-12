@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nonebot-plugin-updater"
-version = "0.1.5"
+version = "0.1.6"
 description = "一款全新的检测已安装插件更新情况的插件"
 authors = ["hanasa2023 <hanasakayui2022@gmail.com>"]
 license = "MIT"
@@ -14,6 +14,7 @@ nonebot-plugin-alconna = ">=0.53.0"
 toml = ">=0.10.2"
 nonebot-plugin-htmlrender = ">=0.3.5"
 tabulate = ">=0.9.0"
+nonebot-plugin-status = "0.8.0"
 
 
 [[tool.poetry.source]]
@@ -44,6 +45,6 @@ build-backend = "poetry.core.masonry.api"
 adapters = [
     { name = "OneBot V11", module_name = "nonebot.adapters.onebot.v11" },
 ]
-plugins = []
+plugins = ["nonebot_plugin_status"]
 plugin_dirs = [""]
 builtin_plugins = []

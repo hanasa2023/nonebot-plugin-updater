@@ -6,9 +6,8 @@ from typing import Any
 from nonebot import plugin, require
 from tabulate import tabulate
 
-from nonebot_plugin_updater.utils.addition_for_htmlrender import template_element_to_pic
-
 from .config import plugin_config
+from .utils.addition_for_htmlrender import template_element_to_pic
 from .utils.common import (
     get_plugin_info_list,
     get_plugin_module_list,
@@ -61,7 +60,7 @@ async def _() -> None:
     else:
         plugin_info_list: list[NBResponse] = await get_plugin_info_list(plugin_list)
         template_path = Path(__file__).parent / 'templates'
-        img = await template_element_to_pic(
+        img: bytes = await template_element_to_pic(
             str(template_path),
             template_name='plugin_info.jinja2',
             templates={'plugins': plugin_info_list},

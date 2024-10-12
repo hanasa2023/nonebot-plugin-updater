@@ -55,15 +55,26 @@ async def get_plugin_update_list() -> list[PluginInfo]:
     plugin_module_list = get_plugin_module_list()
     plugin_update_list: list[PluginInfo] = []
     for module in plugin_module_list:
-        plugin = module.replace('_', '-')
-        current_version = importlib_metadata.version(module)
-        lastest_version = await get_plugin_latest_version(plugin)
-        if current_version != lastest_version:
-            plugin_update_list.append(
-                PluginInfo(
-                    name=plugin,
-                    current_version=current_version,
-                    latest_version=lastest_version,
-                )
+        # 过滤本地插件
+        async with httpx.AsyncClient() as ctx:
+            response: httpx.Response = await ctx.get(
+                f'{plugin_config.github_proxy}/https://raw.githubusercontent.com/nonebot/registry/results/plugins.json'
             )
+            if response.status_code == 200:
+                data: list[NBResponse] = [
+                    NBResponse(**item) for item in response.json()
+                ]
+                for d in data:
+                    if module in d.module_name:
+                        plugin = module.replace('_', '-')
+                        current_version: str = importlib_metadata.version(module)
+                        lastest_version: str = await get_plugin_latest_version(plugin)
+                        if current_version != lastest_version:
+                            plugin_update_list.append(
+                                PluginInfo(
+                                    name=plugin,
+                                    current_version=current_version,
+                                    latest_version=lastest_version,
+                                )
+                            )
     return plugin_update_list
