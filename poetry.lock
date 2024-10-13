@@ -1567,25 +1567,6 @@ url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple"
 reference = "mirrors"
 
 [[package]]
-name = "tabulate"
-version = "0.9.0"
-description = "Pretty-print tabular data"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "tabulate-0.9.0-py3-none-any.whl", hash = "sha256:024ca478df22e9340661486f85298cff5f6dcdba14f3813e8830015b9ed1948f"},
-    {file = "tabulate-0.9.0.tar.gz", hash = "sha256:0095b12bf5966de529c0feb1fa08671671b3368eec77d7ef7ab114be2c068b3c"},
-]
-
-[package.extras]
-widechars = ["wcwidth"]
-
-[package.source]
-type = "legacy"
-url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple"
-reference = "mirrors"
-
-[[package]]
 name = "tarina"
 version = "0.5.8"
 description = "A collection of common utils for Arclet"
@@ -2169,4 +2150,4 @@ reference = "mirrors"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9, < 4.0"
-content-hash = "23b027a09b1ea4a8c95c781715ea3c87f66ac960be3c993ad9bf2c661a34e143"
+content-hash = "08d3de1eda65b63c532b3ef51f3f50d1f76fad944c5769f9955b50ce93839be0"

@@ -8,7 +8,7 @@ class Tag(BaseModel):
     color: str
 
 
-class NBResponse(BaseModel):
+class NBPluginMetadata(BaseModel):
     module_name: str
     project_link: str
     name: str

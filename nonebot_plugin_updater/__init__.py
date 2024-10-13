@@ -3,7 +3,7 @@ from nonebot.plugin import PluginMetadata, inherit_supported_adapters
 from .commands import check_update, g_plugin_list, update_plugin
 from .config import Config
 
-__version__ = '0.1.7'
+__version__ = '0.1.8'
 __plugin_meta__ = PluginMetadata(
     name='nb插件更新器',
     description='一款全新的检测已安装插件更新情况的插件',

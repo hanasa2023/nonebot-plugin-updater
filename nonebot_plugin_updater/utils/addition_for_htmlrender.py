@@ -6,7 +6,7 @@ import jinja2
 from nonebot import logger, require
 
 require('nonebot_plugin_htmlrender')
-from nonebot_plugin_htmlrender import get_new_page, md_to_pic  # noqa: E402, F401
+from nonebot_plugin_htmlrender import get_new_page  # noqa: E402, F401
 
 
 async def template_element_to_pic(

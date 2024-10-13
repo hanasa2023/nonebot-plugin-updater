@@ -5,16 +5,16 @@ from typing import Any
 
 from nonebot import require
 from nonebot.permission import SUPERUSER
-from tabulate import tabulate
 
 from .config import plugin_config
-from .utils.addition_for_htmlrender import template_element_to_pic
 from .utils.common import (
     get_plugin_info_list,
     get_plugin_module_list,
     get_plugin_update_list,
+    plugin_info_text_builder,
+    plugin_update_text_builder,
 )
-from .utils.models import NBResponse, PluginInfo
+from .utils.models import NBPluginMetadata, PluginInfo
 from .utils.updater import Updater
 
 require('nonebot_plugin_alconna')
@@ -58,14 +58,14 @@ async def _() -> None:
     plugin_list: list[str] = []
     for moudle in plugin_module_list:
         plugin_list.append(moudle.replace('_', '-'))
+    plugin_info_list: list[NBPluginMetadata] = await get_plugin_info_list(plugin_list)
     if plugin_config.info_send_mode == 'text':
-        headers: list[str] = ['通过pypi安装的插件']
-        table: list[list[str]] = [[plugin for plugin in plugin_list]]
         msg: UniMessage[Text] | UniMessage[Image] = UniMessage().text(
-            tabulate(table, headers, showindex=True)
+            plugin_info_text_builder(plugin_info_list)
         )
     else:
-        plugin_info_list: list[NBResponse] = await get_plugin_info_list(plugin_list)
+        from .utils.addition_for_htmlrender import template_element_to_pic
+
         template_path: Path = Path(__file__).parent / 'templates'
         img: bytes = await template_element_to_pic(
             str(template_path),
@@ -73,7 +73,6 @@ async def _() -> None:
             templates={'plugins': plugin_info_list},
             element='#container',
             wait=2,
-            omit_background=True,
         )
         msg = UniMessage().image(raw=img)
     await g_plugin_list.finish(msg)
@@ -83,23 +82,19 @@ async def _() -> None:
 async def _() -> None:
     plugin_update_list: list[PluginInfo] = await get_plugin_update_list()
     if plugin_config.info_send_mode == 'text':
-        headers: list[str] = ['plugin name', 'version']
-        table: list[list[str]] = [
-            [plugin.name, plugin.current_version + '-->' + plugin.latest_version]
-            for plugin in plugin_update_list
-        ]
         msg: UniMessage[Text] | UniMessage[Image] = UniMessage().text(
-            tabulate(table, headers, showindex=True)
+            plugin_update_text_builder(plugin_update_list)
         )
     else:
+        from .utils.addition_for_htmlrender import template_element_to_pic
+
         template_path: Path = Path(__file__).parent / 'templates'
-        img = await template_element_to_pic(
+        img: bytes = await template_element_to_pic(
             str(template_path),
             template_name='check_plugin_update.jinja2',
             templates={'plugins': plugin_update_list},
             element='#container',
             wait=2,
-            omit_background=True,
         )
         msg = UniMessage().image(raw=img)
     await check_update.finish(msg)
@@ -114,7 +109,7 @@ async def _(plugin_name: Match[str] = AlconnaMatch('plugin_name')) -> None:
                 await update_plugin.finish('所有插件已是最新')
             else:
                 await update_plugin.send('正在更新插件中……')
-                updater = Updater(plugin_update_list)
+                updater: Updater = Updater(plugin_update_list)
                 await updater.do_update()
         elif plugin_name.result in [plugin.name for plugin in plugin_update_list]:
             await update_plugin.send('正在更新插件中……')
