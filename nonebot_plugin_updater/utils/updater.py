@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import inspect
 import socket
-from os import execl
 from pathlib import Path
 from shutil import which
+from subprocess import PIPE
 from typing import TYPE_CHECKING
 
 from nonebot import get_driver, logger
@@ -110,6 +110,54 @@ class Updater:
                 logger.exception(e)
                 await self.do_stop()
 
+    async def do_install(self) -> None:
+        import atexit
+        import subprocess
+
+        if 'none' in driver.type:
+            atexit.register(self._restart)
+            self._none_stop()
+        if 'fastapi' in driver.type or 'quart' in driver.type:
+            server = self._uvicorn_getserver()
+            await server.shutdown(self._uvicorn_getsocket())
+            try:
+                nb = which('nb')
+                if nb:
+                    if self.plugin_name is not None:
+                        subprocess.run(
+                            [nb, 'plugin', 'install', self.plugin_name], check=True
+                        )
+                self._restart()
+            except Exception as e:
+                logger.exception(e)
+                await self.do_stop()
+
+    async def do_uninstall(self) -> None:
+        import atexit
+        import subprocess
+
+        if 'none' in driver.type:
+            atexit.register(self._restart)
+            self._none_stop()
+        if 'fastapi' in driver.type or 'quart' in driver.type:
+            server = self._uvicorn_getserver()
+            await server.shutdown(self._uvicorn_getsocket())
+            try:
+                nb = which('nb')
+                if nb:
+                    if self.plugin_name is not None:
+                        process = subprocess.Popen(
+                            [nb, 'plugin', 'uninstall', self.plugin_name],
+                            stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                        )
+                        process.communicate(input=b'y\n')
+                self._restart()
+            except Exception as e:
+                logger.exception(e)
+                await self.do_stop()
+
     async def do_restart(self) -> None:
         import atexit
 
@@ -121,5 +169,6 @@ class Updater:
             await server.shutdown(self._uvicorn_getsocket())
             try:
                 self._restart()
-            except Exception:
+            except Exception as e:
+                logger.error(e)
                 await self.do_stop()

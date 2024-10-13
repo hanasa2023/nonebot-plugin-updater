@@ -80,6 +80,10 @@
 - 更新插件<br>
   ![update_plugin](./docs/update_plugin.png)
 
+- 安装插件<br>
+
+- 卸载插件<br>
+
 - 远程关闭 nb<br>
   ![close_nb](./docs/close_nb.png)
 
@@ -95,6 +99,8 @@
 |        `获取插件列表`         |     无     |  无   |                   获取已安装的插件列表                    |          `/获取插件列表`          |
 |        `检查插件更新`         |     无     |  无   |                    检查可用的插件更新                     |          `/检查插件更新`          |
 | `更新插件 <需要更新的插件名>` | SUPERUSERS |  无   | 更新插件。若需更新的插件名为`all`，则更新所有已安装的插件 | `/更新插件 nonebot-pluign-status` |
+| `安装插件 <需要安装的插件名>` | SUPERUSERS |  无   |                       安装指定插件                        | `/安装插件 nonebot-pluign-status` |
+| `卸载插件 <需要卸载的插件名>` | SUPERUSERS |  无   |                       卸载指定插件                        | `/卸载插件 nonebot-pluign-status` |
 |           `关闭nb`            | SUPERUSERS |  无   |                        远程关闭 nb                        |             `/关闭nb`             |
 |           `重启nb`            | SUPERUSERS |  无   |                        远程重启 nb                        |             `/重启nb`             |
 
@@ -102,7 +108,7 @@
 
 - [x] 使用 html 渲染插件列表及插件更新列表
 - [x] 处理插件模块名与 project_link 不一致的插件
-- [ ] 添加安装/删除插件的功能
+- [x] 添加安装/卸载插件的功能
 
 ## 致谢
 

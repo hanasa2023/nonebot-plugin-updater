@@ -11,6 +11,7 @@ from .utils.common import (
     get_plugin_info_list,
     get_plugin_module_list,
     get_plugin_update_list,
+    get_store_plugins,
     plugin_info_text_builder,
     plugin_update_text_builder,
 )
@@ -39,6 +40,16 @@ check_update: type[AlconnaMatcher] = on_alconna(_u, use_cmd_start=True)
 _udr: Alconna[Any] = Alconna('更新插件', Args['plugin_name', str])
 update_plugin: type[AlconnaMatcher] = on_alconna(
     _udr, use_cmd_start=True, permission=SUPERUSER
+)
+
+_idr: Alconna[Any] = Alconna('安装插件', Args['plugin_name', str])
+install_plugin: type[AlconnaMatcher] = on_alconna(
+    _idr, use_cmd_start=True, permission=SUPERUSER
+)
+
+_uidr: Alconna[Any] = Alconna('卸载插件', Args['plugin_name', str])
+uninstall_plugin: type[AlconnaMatcher] = on_alconna(
+    _uidr, use_cmd_start=True, permission=SUPERUSER
 )
 
 _c: Alconna[Any] = Alconna('关闭nb')
@@ -117,6 +128,30 @@ async def _(plugin_name: Match[str] = AlconnaMatch('plugin_name')) -> None:
             await updater.do_update()
         else:
             await update_plugin.finish('无效的插件名/插件已是最新')
+
+
+@install_plugin.handle()
+async def _(plugin_name: Match[str] = AlconnaMatch('plugin_name')) -> None:
+    if plugin_name.available:
+        store_plugins: list[NBPluginMetadata] = await get_store_plugins()
+        if plugin_name.result in [plugin.project_link for plugin in store_plugins]:
+            await install_plugin.send('正在安装插件中……')
+            updater: Updater = Updater([], plugin_name.result)
+            await updater.do_install()
+        else:
+            await install_plugin.finish('插件不存在')
+
+
+@uninstall_plugin.handle()
+async def _(plugin_name: Match[str] = AlconnaMatch('plugin_name')) -> None:
+    if plugin_name.available:
+        store_plugins: list[NBPluginMetadata] = await get_store_plugins()
+        if plugin_name.result in [plugin.project_link for plugin in store_plugins]:
+            await uninstall_plugin.send('正在卸载插件中……')
+            updater: Updater = Updater([], plugin_name.result)
+            await updater.do_uninstall()
+        else:
+            await uninstall_plugin.finish('插件不存在')
 
 
 @close_nb.handle()

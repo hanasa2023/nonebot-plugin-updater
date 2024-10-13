@@ -1,6 +1,12 @@
 from nonebot.plugin import PluginMetadata, inherit_supported_adapters
 
-from .commands import check_update, g_plugin_list, update_plugin
+from .commands import (
+    check_update,
+    g_plugin_list,
+    install_plugin,
+    uninstall_plugin,
+    update_plugin,
+)
 from .config import Config
 
 __version__ = '0.1.8'
