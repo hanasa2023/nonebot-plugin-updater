@@ -84,8 +84,10 @@ async def get_plugin_update_list() -> list[PluginInfo]:
         # 过滤本地插件
         store_plugins: list[NBPluginMetadata] = await get_store_plugins()
         for plugin in store_plugins:
-            if module in plugin.module_name:
-                current_version: str = importlib_metadata.version(module)
+            if module == plugin.module_name:
+                current_version: str = importlib_metadata.version(
+                    plugin.project_link.replace('-', '_')
+                )
                 lastest_version: str = plugin.version
                 if current_version != lastest_version:
                     plugin_update_list.append(
@@ -107,6 +109,8 @@ def plugin_info_text_builder(plugin_list: list[NBPluginMetadata]) -> str:
     Returns:
         str:生成的插件信息文本
     """
+    if len(plugin_list) == 0:
+        return '无已安装的插件\n'
     msg: str = '已安装的插件\n'
     for plugin in plugin_list:
         msg += f'\n📦️ {plugin.project_link}\n插件描述：{plugin.desc}\n插件作者：{plugin.author}'
@@ -122,6 +126,8 @@ def plugin_update_text_builder(plugin_update_list: list[PluginInfo]) -> str:
     Returns:
         str: 生成的可更新插件文本
     """
+    if len(plugin_update_list) == 0:
+        return '无可更新的插件\n'
     msg: str = '可更新的插件\n'
     for plugin in plugin_update_list:
         msg += f'\n📦️ {plugin.name}\n🔖 {plugin.current_version} --> {plugin.latest_version}'
