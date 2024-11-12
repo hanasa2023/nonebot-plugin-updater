@@ -4,6 +4,7 @@ from typing import Any
 import httpx
 import importlib_metadata
 import toml
+from nonebot import logger
 
 from ..config import plugin_config
 from .models import NBPluginMetadata, PluginInfo
@@ -36,9 +37,9 @@ def find_project_root() -> Path:
     Returns:
         Path: 项目根目录
     """
-    for parent in Path(__file__).parents:
-        if (parent / 'pyproject.toml').exists():
-            return parent
+    parent: Path = Path.cwd().resolve()
+    if (parent / 'pyproject.toml').exists():
+        return parent
     raise FileNotFoundError("Could not find 'pyproject.toml' in any parent directory")
 
 

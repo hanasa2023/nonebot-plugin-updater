@@ -9,7 +9,7 @@ from .commands import (
 )
 from .config import Config
 
-__version__ = '0.1.9'
+__version__ = '0.2.0'
 __plugin_meta__ = PluginMetadata(
     name='nb插件更新器',
     description='一款全新的检测已安装插件更新情况的插件',
