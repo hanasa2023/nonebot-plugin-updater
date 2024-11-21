@@ -54,13 +54,17 @@ class Updater:
         fis = inspect.getouterframes(inspect.currentframe())
         skvars = (fi.frame.f_locals.get('sockets', None) for fi in fis[::-1])
         try:
-            socks, *_ = (
+            valid_sockets = [
                 s
                 for s in skvars
                 if isinstance(s, list) and all(isinstance(x, socket.socket) for x in s)
-            )
-            return socks
-        except Exception:
+            ]
+
+            if valid_sockets:
+                return valid_sockets[0]
+            return []
+        except Exception as e:
+            logger.exception(e)
             return []
 
     @staticmethod
@@ -83,6 +87,20 @@ class Updater:
         if 'none' in driver.type:
             Updater._none_stop()
 
+    async def shutdown_with_timeout(self, server: Server) -> None:
+        import asyncio
+        import os
+        import signal
+
+        try:
+            await asyncio.wait_for(
+                server.shutdown(self._uvicorn_getsocket()), timeout=5.0
+            )
+            logger.info('正常关闭完成，执行重启')
+        except asyncio.TimeoutError:
+            logger.warning('关闭超时，执行强制重启')
+            os.kill(os.getpid(), signal.SIGTERM)
+
     async def do_update(self) -> None:
         import atexit
         import subprocess
@@ -91,9 +109,10 @@ class Updater:
             atexit.register(self._restart)
             self._none_stop()
         if 'fastapi' in driver.type or 'quart' in driver.type:
-            server = self._uvicorn_getserver()
-            await server.shutdown(self._uvicorn_getsocket())
             try:
+                server = self._uvicorn_getserver()
+                server.should_exit = True
+                await self.shutdown_with_timeout(server)
                 nb = which('nb')
                 if nb:
                     if self.plugin_name is not None:
@@ -118,9 +137,10 @@ class Updater:
             atexit.register(self._restart)
             self._none_stop()
         if 'fastapi' in driver.type or 'quart' in driver.type:
-            server = self._uvicorn_getserver()
-            await server.shutdown(self._uvicorn_getsocket())
             try:
+                server = self._uvicorn_getserver()
+                server.should_exit = True
+                await self.shutdown_with_timeout(server)
                 nb = which('nb')
                 if nb:
                     if self.plugin_name is not None:
@@ -140,19 +160,16 @@ class Updater:
             atexit.register(self._restart)
             self._none_stop()
         if 'fastapi' in driver.type or 'quart' in driver.type:
-            server = self._uvicorn_getserver()
-            await server.shutdown(self._uvicorn_getsocket())
             try:
+                server = self._uvicorn_getserver()
+                server.should_exit = True
+                await self.shutdown_with_timeout(server)
                 nb = which('nb')
                 if nb:
                     if self.plugin_name is not None:
-                        process = subprocess.Popen(
-                            [nb, 'plugin', 'uninstall', self.plugin_name],
-                            stdin=subprocess.PIPE,
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE,
+                        subprocess.run(
+                            [nb, 'plugin', 'uninstall', self.plugin_name, '-y'],
                         )
-                        process.communicate(input=b'y\n')
                 self._restart()
             except Exception as e:
                 logger.exception(e)
@@ -165,9 +182,10 @@ class Updater:
             atexit.register(self._restart)
             self._none_stop()
         if 'fastapi' in driver.type or 'quart' in driver.type:
-            server = self._uvicorn_getserver()
-            await server.shutdown(self._uvicorn_getsocket())
             try:
+                server = self._uvicorn_getserver()
+                server.should_exit = True
+                await self.shutdown_with_timeout(server)
                 self._restart()
             except Exception as e:
                 logger.error(e)
