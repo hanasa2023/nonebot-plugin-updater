@@ -17,7 +17,9 @@ async def get_store_plugins() -> list[NBPluginMetadata]:
         list[NBPluginMetadata]: 插件元信息列表
     """
     async with httpx.AsyncClient() as ctx:
-        proxy_url = f'{plugin_config.github_proxy}/' if plugin_config.github_proxy else ''
+        proxy_url = (
+            f'{plugin_config.github_proxy}/' if plugin_config.github_proxy else ''
+        )
         response: httpx.Response = await ctx.get(
             f'{proxy_url}https://raw.githubusercontent.com/nonebot/registry/results/plugins.json'
         )
