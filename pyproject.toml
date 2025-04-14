@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nonebot-plugin-updater"
-version = "0.2.1"
+version = "0.2.2"
 description = "一款全新的检测已安装插件更新情况的插件"
 authors = ["hanasa2023 <hanasakayui2022@gmail.com>"]
 license = "MIT"

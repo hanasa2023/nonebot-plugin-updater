@@ -9,7 +9,7 @@ from .commands import (
 )
 from .config import Config
 
-__version__ = '0.2.1'
+__version__ = '0.2.2'
 __plugin_meta__ = PluginMetadata(
     name='nb插件更新器',
     description='一款全新的检测已安装插件更新情况的插件',
@@ -27,8 +27,6 @@ __plugin_meta__ = PluginMetadata(
     supported_adapters=inherit_supported_adapters('nonebot_plugin_alconna'),
     extra={
         'version': __version__,
-        'authors': [
-            'hanasaki <hanasakayui2022@gmail.com>',
-        ],
+        'authors': ['hanasaki <hanasakayui2022@gmail.com>', 'MoonShadow1976 <>'],
     },
 )
