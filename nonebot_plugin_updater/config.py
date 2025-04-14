@@ -8,7 +8,7 @@ class Config(BaseModel):
     """Plugin Config Here"""
 
     # GitHub代理
-    github_proxy: str = 'https://ghp.ci'
+    github_proxy: str = ''
     # 发送信息的模式
     info_send_mode: Literal['text', 'pic'] = 'pic'
 
