@@ -26,18 +26,46 @@ class Updater:
 
     def _restart(self) -> None:
         from os import execlp
+        from sys import argv
 
         nb = which('nb')
         py = which('python')
-        if nb:
-            execlp(nb, nb, 'run')
-        elif py:
-            from sys import argv
 
-            if argv and Path(argv[0]).exists():
-                execlp(py, py, argv[0])
-            if Path('bot.py').exists():
-                execlp(py, py, 'bot.py')
+        # 尝试使用 nb 命令
+        if nb:
+            try:
+                execlp(nb, nb, 'run')
+            except Exception as e:
+                logger.warning(f'使用 nb 命令重启失败: {e}')
+
+        # 尝试使用当前启动脚本
+        if py and argv:
+            if len(argv) > 0 and Path(argv[0]).exists():
+                try:
+                    execlp(py, py, *argv)
+                except Exception as e:
+                    logger.warning(f'使用当前脚本重启失败: {e}')
+
+        # 尝试常见的启动文件
+        common_start_files = ['bot.py', 'main.py', 'app.py', 'run.py']
+        if py:
+            for start_file in common_start_files:
+                if Path(start_file).exists():
+                    try:
+                        execlp(py, py, start_file)
+                    except Exception as e:
+                        logger.warning(f'使用 {start_file} 重启失败: {e}')
+                        continue
+
+        # 尝试使用 nbr 启动
+        nbr = which('nbr')
+        if nbr:
+            try:
+                execlp(nbr, nbr, 'run')
+            except Exception as e:
+                logger.warning(f'使用 nbr 重启失败: {e}')
+
+        logger.error('所有重启尝试均失败，请手动重启')
         raise Exception('无法重启')
 
     @staticmethod
@@ -91,6 +119,7 @@ class Updater:
         import asyncio
         import os
         import signal
+        import atexit
 
         try:
             await asyncio.wait_for(
@@ -99,6 +128,8 @@ class Updater:
             logger.info('正常关闭完成，执行重启')
         except asyncio.TimeoutError:
             logger.warning('关闭超时，执行强制重启')
+            # 注册重启回调后再强制终止
+            atexit.register(self._restart)
             os.kill(os.getpid(), signal.SIGTERM)
 
     async def do_update(self) -> None:
@@ -185,8 +216,12 @@ class Updater:
             try:
                 server = self._uvicorn_getserver()
                 server.should_exit = True
+                # 注册重启回调，确保即使超时也能重启
+                atexit.register(self._restart)
                 await self.shutdown_with_timeout(server)
+                # 如果正常关闭，直接执行重启
                 self._restart()
             except Exception as e:
-                logger.error(e)
+                logger.error(f'重启过程中出现错误: {e}')
+                # 尝试基本的停止操作
                 await self.do_stop()
