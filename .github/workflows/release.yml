@@ -35,7 +35,7 @@ jobs:
           print(config['project']['version'])
           PY
           )
-          echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "VERSION=v$VERSION" >> "$GITHUB_OUTPUT"
           echo "TAG_VERSION=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
           echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
 
