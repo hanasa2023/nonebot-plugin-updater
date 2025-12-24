@@ -9,19 +9,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install poetry
-        run: pipx install poetry
-        shell: bash
-
-      - uses: actions/setup-python@v5
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v4
         with:
           python-version: "3.9"
-          cache: "poetry"
 
-      - run: poetry install
+      - name: Install dependencies
+        run: uv sync --locked --group dev
         shell: bash
 
       - name: Run Mypy
         shell: bash
-        run: |
-          poetry run mypy ./nonebot_plugin_updater
+        run: uv run mypy ./nonebot_plugin_updater
