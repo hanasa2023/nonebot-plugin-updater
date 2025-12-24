@@ -1,6 +1,6 @@
 [project]
 name = "nonebot-plugin-updater"
-version = "0.2.2"
+version = "0.2.3"
 description = "一款全新的检测已安装插件更新情况的插件"
 authors = [{ name = "hanasa2023", email = "hanasakayui2022@gmail.com" }]
 license = { text = "MIT" }
