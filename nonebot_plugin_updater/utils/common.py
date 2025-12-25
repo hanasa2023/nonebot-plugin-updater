@@ -3,7 +3,8 @@ from typing import Any
 
 import httpx
 import importlib_metadata
-import toml
+import re
+import tomllib
 from nonebot import logger
 
 from ..config import plugin_config
@@ -54,9 +55,24 @@ def get_plugin_module_list() -> list[str]:
     """
     project_root: Path = find_project_root()
     pyproject_path: Path = project_root / 'pyproject.toml'
-    config: dict[str, Any] = toml.load(pyproject_path)
+    with pyproject_path.open('rb') as fp:
+        config: dict[str, Any] = tomllib.load(fp)
     plugin_list: list[str] = config['tool']['nonebot']['plugins']
     return plugin_list
+
+
+def _normalize_version(version_str: str) -> tuple:
+    parts: list[str] = re.split(r'[.+-]', version_str)
+    return tuple(int(part) if part.isdigit() else part for part in parts)
+
+
+def _is_newer_version(latest_version: str, current_version: str) -> bool:
+    try:
+        from packaging.version import Version
+
+        return Version(latest_version) > Version(current_version)
+    except Exception:
+        return _normalize_version(latest_version) > _normalize_version(current_version)
 
 
 async def get_plugin_info_list(plugin_list: list[str]) -> list[NBPluginMetadata]:
@@ -92,13 +108,13 @@ async def get_plugin_update_list() -> list[PluginInfo]:
                 current_version: str = importlib_metadata.version(
                     plugin.project_link.replace('-', '_')
                 )
-                lastest_version: str = plugin.version
-                if current_version != lastest_version:
+                latest_version: str = plugin.version
+                if _is_newer_version(latest_version, current_version):
                     plugin_update_list.append(
                         PluginInfo(
                             name=plugin.project_link,
                             current_version=current_version,
-                            latest_version=lastest_version,
+                            latest_version=latest_version,
                         )
                     )
     return plugin_update_list

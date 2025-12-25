@@ -1,6 +1,6 @@
 [project]
 name = "nonebot-plugin-updater"
-version = "0.2.3"
+version = "0.2.4"
 description = "一款全新的检测已安装插件更新情况的插件"
 authors = [{ name = "hanasa2023", email = "hanasakayui2022@gmail.com" }]
 license = { text = "MIT" }
@@ -12,6 +12,7 @@ dependencies = [
     "nonebot-plugin-alconna>=0.53.0",
     "toml>=0.10.2",
     "nonebot-plugin-htmlrender>=0.3.5",
+    "packaging>=25.0",
 ]
 
 [dependency-groups]

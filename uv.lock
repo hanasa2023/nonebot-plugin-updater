@@ -1030,7 +1030,7 @@ wheels = [
 
 [[package]]
 name = "nonebot-plugin-updater"
-version = "0.2.3"
+version = "0.2.4"
 source = { editable = "." }
 dependencies = [
     { name = "httpx" },
@@ -1038,6 +1038,7 @@ dependencies = [
     { name = "nonebot-plugin-alconna", version = "0.60.3", source = { registry = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple/" }, marker = "python_full_version >= '3.10'" },
     { name = "nonebot-plugin-htmlrender" },
     { name = "nonebot2" },
+    { name = "packaging" },
     { name = "toml" },
 ]
 
@@ -1057,6 +1058,7 @@ requires-dist = [
     { name = "nonebot-plugin-alconna", specifier = ">=0.53.0" },
     { name = "nonebot-plugin-htmlrender", specifier = ">=0.3.5" },
     { name = "nonebot2", specifier = ">=2.3.3" },
+    { name = "packaging", specifier = ">=25.0" },
     { name = "toml", specifier = ">=0.10.2" },
 ]
 
@@ -1107,6 +1109,15 @@ fastapi = [
     { name = "fastapi" },
     { name = "uvicorn", version = "0.39.0", source = { registry = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple/" }, extra = ["standard"], marker = "python_full_version < '3.10'" },
     { name = "uvicorn", version = "0.40.0", source = { registry = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple/" }, extra = ["standard"], marker = "python_full_version >= '3.10'" },
+]
+
+[[package]]
+name = "packaging"
+version = "25.0"
+source = { registry = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple/" }
+sdist = { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/a1/d4/1fc4078c65507b51b96ca8f8c3ba19e6a61c8253c72794544580a7b6c24d/packaging-25.0.tar.gz", hash = "sha256:d443872c98d677bf60f6a1f2f8c1cb748e8fe762d2bf9d3148b5599295b0fc4f", size = 165727, upload-time = "2025-04-19T11:48:59.673Z" }
+wheels = [
+    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/20/12/38679034af332785aac8774540895e234f4d07f7545804097de4b666afd8/packaging-25.0-py3-none-any.whl", hash = "sha256:29572ef2b1f17581046b3a2227d5c611fb25ec70ca1ba8554b24b0e69331a484", size = 66469, upload-time = "2025-04-19T11:48:57.875Z" },
 ]
 
 [[package]]
