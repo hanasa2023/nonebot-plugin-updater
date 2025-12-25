@@ -1030,7 +1030,7 @@ wheels = [
 
 [[package]]
 name = "nonebot-plugin-updater"
-version = "0.2.4"
+version = "0.2.5"
 source = { editable = "." }
 dependencies = [
     { name = "httpx" },
@@ -1040,6 +1040,7 @@ dependencies = [
     { name = "nonebot2" },
     { name = "packaging" },
     { name = "toml" },
+    { name = "tomli", marker = "python_full_version < '3.11'" },
 ]
 
 [package.dev-dependencies]
@@ -1060,6 +1061,7 @@ requires-dist = [
     { name = "nonebot2", specifier = ">=2.3.3" },
     { name = "packaging", specifier = ">=25.0" },
     { name = "toml", specifier = ">=0.10.2" },
+    { name = "tomli", marker = "python_full_version < '3.11'", specifier = ">=2.0.1" },
 ]
 
 [package.metadata.requires-dev]

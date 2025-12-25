@@ -4,10 +4,15 @@ from typing import Any
 import httpx
 import importlib_metadata
 import re
-import tomllib
 from nonebot import logger
 
+try:  # py311+
+    import tomllib  # type: ignore[import-not-found]
+except ModuleNotFoundError:  # py310-
+    import tomli as tomllib  # type: ignore[import-not-found,assignment]
+
 from ..config import plugin_config
+
 from .models import NBPluginMetadata, PluginInfo
 
 
@@ -68,7 +73,7 @@ def _normalize_version(version_str: str) -> tuple:
 
 def _is_newer_version(latest_version: str, current_version: str) -> bool:
     try:
-        from packaging.version import Version
+        from packaging.version import Version  # type: ignore[import]
 
         return Version(latest_version) > Version(current_version)
     except Exception:
