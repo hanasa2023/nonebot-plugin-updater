@@ -1,6 +1,6 @@
 [project]
 name = "nonebot-plugin-updater"
-version = "0.2.5"
+version = "0.2.6"
 description = "一款全新的检测已安装插件更新情况的插件"
 authors = [{ name = "hanasa2023", email = "hanasakayui2022@gmail.com" }]
 license = { text = "MIT" }
@@ -8,7 +8,7 @@ readme = "README.md"
 requires-python = ">=3.9,<4.0"
 dependencies = [
     "nonebot2>=2.3.3",
-    "httpx>=0.27.2",
+    "httpx[socks]>=0.27.2",
     "nonebot-plugin-alconna>=0.53.0",
     "toml>=0.10.2",
     "tomli>=2.0.1; python_version < '3.11'",
