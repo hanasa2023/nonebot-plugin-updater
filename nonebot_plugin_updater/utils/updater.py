@@ -127,21 +127,23 @@ class Updater:
         try:
             # 伪装成一个真实的终端环境运行
             p = subprocess.Popen(cmd_list, stdin=slave, stdout=slave, stderr=slave)
-            
+
             # 提前向终端里注入 'y' 和回车
-            os.write(master, b"y\n")
+            os.write(master, b'y\n')
 
             # 开个后台子线程充当“抽水机”，抽干输出，防止 nbr 输出过多塞满缓冲区导致进程假死
             def drain():
                 try:
-                    while os.read(master, 2048): pass
+                    while os.read(master, 2048):
+                        pass
                 except OSError:
                     pass
+
             threading.Thread(target=drain, daemon=True).start()
 
             p.wait()
         except Exception as e:
-            logger.error(f"执行命令出错 {cmd_list}: {e}")
+            logger.error(f'执行命令出错 {cmd_list}: {e}')
         finally:
             os.close(slave)
             os.close(master)
@@ -170,14 +172,14 @@ class Updater:
 
         cli = which('nbr') or which('nb')
         if cli:
-            logger.info(f"检测到环境指令为 {cli}，开始执行更新...")
+            logger.info(f'检测到环境指令为 {cli}，开始执行更新...')
             if self.plugin_name is not None:
                 self._run_with_auto_yes([cli, 'plugin', 'update', self.plugin_name])
             else:
                 for plugin in self.plugin_update_list:
                     subprocess.run([cli, 'plugin', 'update', plugin.name], check=True)
         else:
-            e.reply("未检测到 nbr 或 nb 指令，跳过更新！")
+            e.reply('未检测到 nbr 或 nb 指令，跳过更新！')
 
         if 'none' in driver.type:
             atexit.register(self._restart)
@@ -213,7 +215,7 @@ class Updater:
             if self.plugin_name is not None:
                 self._run_with_auto_yes([cli, 'plugin', 'install', self.plugin_name])
         else:
-            e.reply("未检测到 nbr 或 nb 指令，跳过安装！")
+            e.reply('未检测到 nbr 或 nb 指令，跳过安装！')
 
         if 'none' in driver.type:
             atexit.register(self._restart)
@@ -244,7 +246,7 @@ class Updater:
             if self.plugin_name is not None:
                 self._run_with_auto_yes([cli, 'plugin', 'uninstall', self.plugin_name])
         else:
-            e.reply("未检测到 nbr 或 nb 指令，跳过卸载！")
+            e.reply('未检测到 nbr 或 nb 指令，跳过卸载！')
 
         if 'none' in driver.type:
             atexit.register(self._restart)
