@@ -79,19 +79,61 @@ def _is_newer_version(latest_version: str, current_version: str) -> bool:
 
 
 async def get_plugin_info_list(plugin_list: list[str]) -> list[NBPluginMetadata]:
-    """获取插件信息列表
+    from nonebot import logger
+    import importlib.metadata
 
-    Args:
-        plugin_list (list[str]): 插件列表
-
-    Returns:
-        list[NBPluginMetadata]: 插件元数据列表
-    """
     plugin_info_list: list[NBPluginMetadata] = []
-    store_plugins: list[NBPluginMetadata] = await get_store_plugins()
-    for plugin in store_plugins:
-        if plugin.project_link in plugin_list:
-            plugin_info_list.append(plugin)
+    
+    # 1. 先去拉取官方商店数据备用
+    store_plugins: list[NBPluginMetadata] = []
+    try:
+        store_plugins = await get_store_plugins()
+    except Exception:
+        logger.warning("无法获取商店信息，将仅显示本地基础信息")
+
+    # 2.命名统一：无论原作者在商店里注册的是横杠还是下划线，统统把对照字典的 key 转成下划线
+    store_dict = {p.project_link.replace("-", "_"): p for p in store_plugins}
+
+    # 3. 遍历获取到的插件列表
+    for plugin_name in plugin_list:
+        # 把待查询的插件名也统一转成下划线，彻底抹平 `-` 和 `_` 的差异
+        normalized_name = plugin_name.replace("-", "_")
+        
+        if normalized_name in store_dict:
+            # 如果商店里能匹配上，直接使用官方丰富的展示数据
+            plugin_info_list.append(store_dict[normalized_name])
+        else:
+            # 4.如果商店里真没有，自己拼凑一个本地信息
+            try:
+                # importlib 底层很聪明，能自动容错横杠和下划线
+                dist = importlib.metadata.distribution(plugin_name)
+                version = dist.version
+                desc = dist.metadata.get("Summary", "这是一个非官方商店的本地插件")
+                author = dist.metadata.get("Author", "未知作者")
+            except importlib.metadata.PackageNotFoundError:
+                # 连 pip 记录都找不到（比如直接塞进 src/plugins 的本地源码插件）
+                version = "未知"
+                desc = "未通过包管理器安装的本地源码插件"
+                author = "未知"
+
+            # 强行打包塞进最终的展示列表中
+            plugin_info_list.append(
+                NBPluginMetadata(
+                    module_name=normalized_name,
+                    project_link=plugin_name, # 保持最初始的名字给后面用
+                    author=author,
+                    tags=[],
+                    is_official=False,
+                    type="application",
+                    supported_adapters=[],
+                    name=plugin_name,
+                    desc=desc,
+                    valid=True,
+                    version=version,
+                    time="",
+                )
+            )
+
     return plugin_info_list
 
 
