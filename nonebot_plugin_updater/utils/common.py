@@ -95,7 +95,7 @@ async def get_plugin_info_list(plugin_list: list[str]) -> list[NBPluginMetadata]
     # 1. 定义直连 PyPI 的异步请求函数
     async def fetch_pypi_version(pkg_name: str) -> tuple[str, str]:
         # 【关键修复】剥离拓展名，且必须把下划线换成横杠以适配 PyPI 标准！
-        clean_name = pkg_name.split("[")[0].replace("_", "-") 
+        clean_name = pkg_name.split("[")[0]
         try:
             async with httpx.AsyncClient() as client:
                 res = await client.get(f"https://pypi.org/pypi/{clean_name}/json", timeout=5.0)
