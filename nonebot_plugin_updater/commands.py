@@ -112,7 +112,9 @@ async def _() -> None:
 
 
 @update_plugin.handle()
-async def _(plugin_name: Match[str] = AlconnaMatch('plugin_name')) -> None:
+async def _(
+    bot: Bot, event: Event, plugin_name: Match[str] = AlconnaMatch('plugin_name')
+) -> None:
     if plugin_name.available:
         plugin_update_list: list[PluginInfo] = await get_plugin_update_list()
         if plugin_name.result == 'all':
@@ -120,10 +122,14 @@ async def _(plugin_name: Match[str] = AlconnaMatch('plugin_name')) -> None:
                 await update_plugin.finish('所有插件已是最新')
             else:
                 await update_plugin.send('正在更新插件中……')
+                _save_restart_state(bot, event, '✨ 所有插件更新完成，重启成功！')
                 updater: Updater = Updater(plugin_update_list)
                 await updater.do_update()
         elif plugin_name.result in [plugin.name for plugin in plugin_update_list]:
             await update_plugin.send('正在更新插件中……')
+            _save_restart_state(
+                bot, event, f'✨ 插件 {plugin_name.result} 更新完成，重启成功！'
+            )
             updater = Updater(plugin_update_list, plugin_name=plugin_name.result)
             await updater.do_update()
         else:
@@ -131,11 +137,16 @@ async def _(plugin_name: Match[str] = AlconnaMatch('plugin_name')) -> None:
 
 
 @install_plugin.handle()
-async def _(plugin_name: Match[str] = AlconnaMatch('plugin_name')) -> None:
+async def _(
+    bot: Bot, event: Event, plugin_name: Match[str] = AlconnaMatch('plugin_name')
+) -> None:
     if plugin_name.available:
         store_plugins: list[NBPluginMetadata] = await get_store_plugins()
         if plugin_name.result in [plugin.project_link for plugin in store_plugins]:
             await install_plugin.send('正在安装插件中……')
+            _save_restart_state(
+                bot, event, f'✨ 插件 {plugin_name.result} 安装完成，重启成功！'
+            )
             updater: Updater = Updater([], plugin_name.result)
             await updater.do_install()
         else:
@@ -143,11 +154,16 @@ async def _(plugin_name: Match[str] = AlconnaMatch('plugin_name')) -> None:
 
 
 @uninstall_plugin.handle()
-async def _(plugin_name: Match[str] = AlconnaMatch('plugin_name')) -> None:
+async def _(
+    bot: Bot, event: Event, plugin_name: Match[str] = AlconnaMatch('plugin_name')
+) -> None:
     if plugin_name.available:
         store_plugins: list[NBPluginMetadata] = await get_store_plugins()
         if plugin_name.result in [plugin.project_link for plugin in store_plugins]:
             await uninstall_plugin.send('正在卸载插件中……')
+            _save_restart_state(
+                bot, event, f'✨ 插件 {plugin_name.result} 卸载完成，重启成功！'
+            )
             updater: Updater = Updater([], plugin_name.result)
             await updater.do_uninstall()
         else:
@@ -161,6 +177,7 @@ async def _() -> None:
 
 
 @restart_nb.handle()
-async def _() -> None:
+async def _(bot: Bot, event: Event) -> None:
     await restart_nb.send('重启nb中……')
+    _save_restart_state(bot, event, '✨ nb 重启成功！')
     await Updater([]).do_restart()

@@ -51,16 +51,24 @@ def find_project_root() -> Path:
 
 
 def get_plugin_module_list() -> list[str]:
-    """从项目根目录下的pyproject.toml中获取已安装的插件列表
+    from nonebot import get_loaded_plugins
 
-    Returns:
-        list[str]: 已安装的插件列表
-    """
-    project_root: Path = find_project_root()
-    pyproject_path: Path = project_root / 'pyproject.toml'
-    with pyproject_path.open('rb') as fp:
-        config: dict[str, Any] = tomllib.load(fp)
-    plugin_list: list[str] = config['tool']['nonebot']['plugins']
+    # 直接获取 NoneBot 内存里所有已成功加载的插件
+    loaded_plugins = get_loaded_plugins()
+    plugin_list: list[str] = []
+
+    for plugin in loaded_plugins:
+        # 过滤掉 NoneBot 内置的元插件和基础插件 (如 echo)
+        if plugin.name.startswith('nonebot') and not plugin.name.startswith(
+            'nonebot_plugin'
+        ):
+            continue
+        if plugin.name == 'echo':
+            continue
+
+        # 把内存里真实存在的插件名丢进列表
+        plugin_list.append(plugin.name)
+
     return plugin_list
 
 
@@ -79,23 +87,109 @@ def _is_newer_version(latest_version: str, current_version: str) -> bool:
 
 
 async def get_plugin_info_list(plugin_list: list[str]) -> list[NBPluginMetadata]:
-    """获取插件信息列表
+    import httpx
+    import asyncio
+    import importlib.metadata
+    from nonebot import logger
 
-    Args:
-        plugin_list (list[str]): 插件列表
-
-    Returns:
-        list[NBPluginMetadata]: 插件元数据列表
-    """
     plugin_info_list: list[NBPluginMetadata] = []
-    store_plugins: list[NBPluginMetadata] = await get_store_plugins()
-    for plugin in store_plugins:
-        if plugin.project_link in plugin_list:
-            plugin_info_list.append(plugin)
+
+    # 1. 定义直连 PyPI 的异步请求函数
+    async def fetch_pypi_version(pkg_name: str) -> tuple[str, str]:
+        # 【关键修复】剥离拓展名，且必须把下划线换成横杠以适配 PyPI 标准！
+        clean_name = pkg_name.split('[')[0]
+        try:
+            async with httpx.AsyncClient() as client:
+                res = await client.get(
+                    f'https://pypi.org/pypi/{clean_name}/json', timeout=5.0
+                )
+                if res.status_code == 200:
+                    return pkg_name, res.json()['info']['version']
+        except Exception:
+            pass
+        return pkg_name, ''
+
+    # 2. 并发向 PyPI 请求所有插件的最新版本
+    tasks = [fetch_pypi_version(p) for p in plugin_list]
+    pypi_results = await asyncio.gather(*tasks)
+    pypi_versions = dict(pypi_results)
+
+    # 3. 组装展示数据
+    for plugin_name in plugin_list:
+        normalized_name = plugin_name.replace('-', '_')
+
+        # 从本地环境提取信息
+        try:
+            dist = importlib.metadata.distribution(plugin_name)
+            local_version = dist.version
+            desc = dist.metadata.get('Summary', '本地插件')
+            author = dist.metadata.get('Author', '未知')
+            homepage = dist.metadata.get('Home-page', '')
+        except importlib.metadata.PackageNotFoundError:
+            local_version = '未知'
+            desc = '未通过包管理器安装的本地源码插件'
+            author = '未知'
+            homepage = ''
+
+        latest_version = pypi_versions.get(plugin_name)
+        if not latest_version:
+            latest_version = local_version
+
+        plugin_info_list.append(
+            NBPluginMetadata(
+                module_name=normalized_name,
+                project_link=plugin_name.replace('_', '-'),  # 强行规范化为横杠标准名
+                author=author,
+                tags=[],
+                is_official=False,
+                type='application',
+                supported_adapters=[],
+                name=plugin_name,
+                desc=desc,
+                valid=True,
+                version=latest_version,
+                time='',
+                homepage=homepage,
+                skip_test=False,
+            )
+        )
+
     return plugin_info_list
 
 
 async def get_plugin_update_list() -> list[PluginInfo]:
+    """获取可用的插件更新列表"""
+    import importlib.metadata
+
+    plugin_module_list: list[str] = get_plugin_module_list()
+    plugin_update_list: list[PluginInfo] = []
+
+    # 【神级改造】直接复用我们写好的、无延迟且支持并发直连 PyPI 的函数！彻底抛弃原作者的嵌套循环！
+    plugin_info_list = await get_plugin_info_list(plugin_module_list)
+
+    for plugin in plugin_info_list:
+        try:
+            # 获取本地环境安装的版本
+            current_version: str = importlib.metadata.version(plugin.project_link)
+        except importlib.metadata.PackageNotFoundError:
+            continue  # 本地没走 pip 安装的（如直接丢在src/plugins下的），跳过更新检测
+
+        latest_version: str = plugin.version
+
+        # 如果获取不到 PyPI 版本，或者两者版本一样，则跳过
+        if latest_version == '未知' or current_version == latest_version:
+            continue
+
+        if _is_newer_version(latest_version, current_version):
+            plugin_update_list.append(
+                PluginInfo(
+                    name=plugin.project_link,
+                    current_version=current_version,
+                    latest_version=latest_version,
+                )
+            )
+
+    return plugin_update_list
     """获取可用的插件更新列表
 
     Returns:

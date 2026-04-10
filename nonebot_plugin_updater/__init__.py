@@ -1,4 +1,10 @@
+import json
+import os
+from nonebot import get_driver
+from nonebot.adapters import Bot
 from nonebot.plugin import PluginMetadata, inherit_supported_adapters
+
+driver = get_driver()
 
 from .commands import (
     check_update,
@@ -30,3 +36,30 @@ __plugin_meta__ = PluginMetadata(
         'authors': ['hanasaki <hanasakayui2022@gmail.com>', 'MoonShadow1976 <>'],
     },
 )
+
+
+@driver.on_bot_connect
+async def _(bot: Bot):
+    status_file = '.restart_info.json'
+    if os.path.exists(status_file):
+        try:
+            with open(status_file, 'r', encoding='utf-8') as f:
+                info = json.load(f)
+            # 读完立刻删掉，防止下次被重复触发
+            os.remove(status_file)
+
+            if bot.self_id == info.get('bot_id'):
+                target_id = info.get('target_id')
+                is_group = info.get('is_group')
+                msg = info.get('message', '✨ 重启成功！')
+
+                # 适配你主力使用的 OneBot V11 协议
+                if bot.adapter.get_name() == 'OneBot V11':
+                    if is_group:
+                        await bot.send_group_msg(group_id=int(target_id), message=msg)
+                    else:
+                        await bot.send_private_msg(user_id=int(target_id), message=msg)
+        except Exception:
+            # 万一出错，也要确保残留文件被清理
+            if os.path.exists(status_file):
+                os.remove(status_file)
